@@ -62,7 +62,7 @@ inlineData: {
 },}
 try {
   const result = await gemini.generateContent([
-    "I have shared an image of medicine, Check If the uploaded image is a medicine or not! If yes, return the name of medicine otherwise return \"null\"", url
+    "I have shared an possible image of medicine, Check If the uploaded image is a medicine or not! If yes, return the name of medicine otherwise return \"null\"", url
   ]); 
 
   if (String(result.response.text()).includes("null")) {
