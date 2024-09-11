@@ -7,7 +7,7 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/ge
 
 type Bindings = {
   groq: string,
-  gemini: string,
+  
   chatgpt: string,
   groqs: Groq
 }
@@ -18,7 +18,7 @@ app.use(cors())
 
 app.use(async (context, next) => {
   const gemini =  new GoogleGenerativeAI(context.env.gemini);
-  const model = gemini.getGenerativeModel({ model: "gemini-1.5-pro"});
+  // const model = gemini.getGenerativeModel({ model: "gemini-1.5-pro"});
   const openai = new OpenAI({
     organization: "org-yL30nnOzVyRxaW1wYSoOziCG",
     project: "proj_EcfS1AtrpKNVh9GXd2tiP3KA",
@@ -28,7 +28,7 @@ app.use(async (context, next) => {
   const groqs =  new Groq({ apiKey: context.env.groq });
   context.set("groq", groqs);
   context.set("openai", openai);
-  context.set("gemini", model);
+  // context.set("gemini", model);
   await next()
 })
 
@@ -55,7 +55,7 @@ app.use(async (context, next) => {
 
 app.post('/', async (context) => {
   let body = await context.req.json()
-  const gemini = context.var.gemini
+  // const gemini = context.var.gemini
   const AI = context.var.groq
   const openai = context.var.openai
 
@@ -78,14 +78,7 @@ app.post('/', async (context) => {
       ],
     });
    
-    
-  
 
-
-
-
-
-  
 //   const img = await (await fetch(body.image)).blob()
 //   let as = await img.arrayBuffer();
 // let urls = await Buffer.from(as).toString("base64")
