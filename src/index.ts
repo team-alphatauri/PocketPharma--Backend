@@ -36,24 +36,6 @@ app.use(async (context, next) => {
 })
 
 
-
-// chat_completion = client.chat.completions.create(
-//   messages=[
-//       {
-//           "role": "user",
-//           "content": [
-//               {"type": "text", "text": "What's in this image?"},
-//               {
-//                   "type": "image_url",
-//                   "image_url": {
-//                       "url": f"data:image/jpeg;base64,{base64_image}",
-//                   },
-//               },
-//           ],
-//       }
-//   ],
-//   model="llava-v1.5-7b-4096-preview",
-// )
 const Schema = z.object({
   medicine_name: z.string(),
   medicine_price: z.number(),
@@ -85,19 +67,6 @@ app.post('/', async (context) => {
       ],
     });
    
-
-//   const img = await (await fetch(body.image)).blob()
-//   let as = await img.arrayBuffer();
-// let urls = await Buffer.from(as).toString("base64")
-// let url = {
-// inlineData: {
-//   data: urls,
-//   mimeType: body.mime
-// },}
-// try {
-  // const result = await gemini.generateContent([
-  //   "I have shared an possible image of medicine, Check If the uploaded image is a medicine or not! If yes, return the name of medicine otherwise return \"null\"", url
-  // ]); 
 
   if (String(getMedicineName.choices[0].message.content).includes("null")) {
     return context.json({ message: "No medicine found in the image" })
@@ -144,7 +113,7 @@ app.post('/', async (context) => {
     model: "gpt-4o-2024-08-06",
     messages: [
       { role: "system", content: "You are a medical expert. You are given a medicine name and you have to suggest a generic medicine of the same medicine." },
-      { role: "user", content: `generate list of generic medicines which is same as original medicine: ${getMedicineName.choices[0].message.content} but cheaper, also list the original medicine price and the generic one's prices in INR in the object` },
+      { role: "user", content: `generate list of 3 to 5 generic medicines which is same/similar to original medicine: ${getMedicineName.choices[0].message.content} but cheaper, also list the original medicine price and the generic one's prices in INR in the object` },
     ],
     response_format: zodResponseFormat(Schema, "generic_medicine_list_from_original_medicine"),
   });
