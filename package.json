@@ -8,7 +8,8 @@
     "@google/generative-ai": "^0.17.2",
     "groq-sdk": "^0.7.0",
     "hono": "^4.5.11",
-    "openai": "^4.58.2"
+    "openai": "^4.58.2",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240529.0",

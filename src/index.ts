@@ -1,9 +1,12 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import Groq from 'groq-sdk'
-import { Buffer } from 'node:buffer'
+
+import { zodResponseFormat } from 'openai/helpers/zod.mjs'
+import { z } from "zod";
+
 import OpenAI from 'openai'
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai'
+// import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai'
 
 type Bindings = {
   groq: string,
@@ -17,7 +20,7 @@ const app = new Hono<{ Bindings: Bindings }>()
 app.use(cors())
 
 app.use(async (context, next) => {
-  const gemini =  new GoogleGenerativeAI(context.env.gemini);
+  // const gemini =  new GoogleGenerativeAI(context.env.gemini);
   // const model = gemini.getGenerativeModel({ model: "gemini-1.5-pro"});
   const openai = new OpenAI({
     organization: "org-yL30nnOzVyRxaW1wYSoOziCG",
@@ -51,7 +54,11 @@ app.use(async (context, next) => {
 //   ],
 //   model="llava-v1.5-7b-4096-preview",
 // )
-
+const Schema = z.object({
+  medicine_name: z.string(),
+  medicine_price: z.number(),
+  generic_medicine: z.array(z.object({medicine_name: z.string(), medicine_price: z.number()})),
+});
 
 app.post('/', async (context) => {
   let body = await context.req.json()
@@ -116,22 +123,32 @@ app.post('/', async (context) => {
     //   ],
     //   model: "llava-v1.5-7b-4096-preview",
     // });
-  let getGenericMedicineInfo = await AI.chat.completions.create({
-    response_format: {"type": "json_object"},
-    messages: [
-      {role: "system", content: "You are a medical expert. You are given a medicine name and you have to suggest a generic medicine of the same medicine. If there is no generic medicine, Return ONLY JSON OBJECT."},
-      {
-        role: "user",
-        content: [
-          { type: "text", text:`generate list of 3 generic medicines which is same as original medicine: ${getMedicineName.choices[0].message.content} but cheaper, also list the original medicine price and the generic one's prices in INR in the object`},     
+    console.log(getMedicineName.choices[0].message.content)
+  // let getGenericMedicineInfo = await AI.chat.completions.create({
+  //   response_format: {"type": "json_object"},
+  //   messages: [
+  //     {role: "system", content: "You are a medical expert. You are given a medicine name and you have to suggest a generic medicine of the same medicine. If there is no generic medicine, Return ONLY JSON OBJECT."},
+  //     {
+  //       role: "user",
+  //       content: [
+  //         { type: "text", text:`generate list of 3 generic medicines which is same as original medicine: ${getMedicineName.choices[0].message.content} but cheaper, also list the original medicine price and the generic one's prices in INR in the object`},     
                 
          
-        ],
-      },
-    ],
-    model: "llama3-8b-8192",
-  });
+  //       ],
+  //     },
+  //   ],
+  //   model: "llama3-8b-8192",
+  // });
 
+  const getGenericMedicineInfo = await openai.beta.chat.completions.parse({
+    model: "gpt-4o-2024-08-06",
+    messages: [
+      { role: "system", content: "You are a medical expert. You are given a medicine name and you have to suggest a generic medicine of the same medicine." },
+      { role: "user", content: `generate list of generic medicines which is same as original medicine: ${getMedicineName.choices[0].message.content} but cheaper, also list the original medicine price and the generic one's prices in INR in the object` },
+    ],
+    response_format: zodResponseFormat(Schema, "generic_medicine_list_from_original_medicine"),
+  });
+  console.log(getGenericMedicineInfo.choices[0].message.content)
     return context.json(getGenericMedicineInfo.choices[0].message.content)
   
    
